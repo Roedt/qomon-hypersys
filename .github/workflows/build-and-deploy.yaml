@@ -1,0 +1,70 @@
+name: Build and deploy
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  APP: 'qomon-hypersys'
+  GAR_LOCATION: 'europe-north1'
+  PROJECT_ID: 'qomon-hypersys'
+  REGION: 'europe-north1'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+      digest: ${{ steps.docker-build-push.outputs.digest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-encryption-key: ${{ secrets.GRADLEKEY }}
+      - name: Setup java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - name: Package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew build -Dquarkus.profile=prod
+      - name: auth
+        uses: 'google-github-actions/auth@v3'
+        with:
+          project_id: '${{ env.PROJECT_ID }}'
+          workload_identity_provider: 'projects/136956875276/locations/global/workloadIdentityPools/github-actions/providers/ghactions'
+          service_account: '${{ secrets.SERVICE_ACCOUNT }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+        with:
+          project_id: '${{ env.PROJECT_ID }}'
+
+      - name: 'Docker auth'
+        run: |-
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      - name: 'Build and push container'
+        run: |-
+          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}" -f src/main/docker/Dockerfile.jvm .
+          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}"
+
+      - id: 'deploy'
+        uses: 'google-github-actions/deploy-cloudrun@v3'
+        with:
+          service: '${{ env.APP }}'
+          image: "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}"
+          region: '${{ env.GAR_LOCATION }}'
