@@ -62,6 +62,7 @@ nb-configuration.xml
 
 # Local environment
 .env
+.service-account.json
 
 # Plugin directory
 /.quarkus/cli/plugins/
