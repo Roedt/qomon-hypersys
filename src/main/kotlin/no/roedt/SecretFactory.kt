@@ -7,6 +7,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty
 interface SecretFactory {
     fun getHypersysClientId(): String
     fun getHypersysClientSecret(): String
+    fun getQomonApiKey(): String
 }
 
 @Dependent
@@ -16,7 +17,10 @@ class EnvSecretFactory(
     private var hypersysClientId: String,
     @ConfigProperty(name = "hypersysClientSecret")
     private var hypersysClientSecret: String,
+    @ConfigProperty(name = "qomonApiKey")
+    private var qomonApiKey: String,
 ) : SecretFactory {
     override fun getHypersysClientId() = hypersysClientId
     override fun getHypersysClientSecret() = hypersysClientSecret
+    override fun getQomonApiKey() = qomonApiKey
 }

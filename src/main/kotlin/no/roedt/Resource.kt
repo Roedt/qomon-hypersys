@@ -7,11 +7,13 @@ import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import no.roedt.hypersys.EkteHypersysService
 import no.roedt.hypersys.HypersysService
+import no.roedt.qomon.QomonService
 
 @ApplicationScoped
 @Path("/")
 class Resource(
-    val hypersysService: HypersysService
+    val hypersysService: HypersysService,
+    val qomonService: QomonService,
 ) {
     @Path("integrer")
     @GET
@@ -25,6 +27,9 @@ class Resource(
         } else {
             println("Bruker fake hypersys. Held fram.")
         }
+
+        val roller = qomonService.roller()
+
 
         if (fraHypersys.size > 1 && fraHypersys.keys.firstOrNull()?.startsWith("Testlag") == false) {
             println("Skal ikkje køyre på ordentleg per no")

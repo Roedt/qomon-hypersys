@@ -28,6 +28,8 @@ class GCPSecretFactory(
 
     override fun getHypersysClientSecret() = getSecretFromSecretManager(GCPSecretManagerKey.HYPERSYS_CLIENT_SECRET)
 
+    override fun getQomonApiKey() = getSecretFromSecretManager(GCPSecretManagerKey.QOMON_API_KEY)
+
     private fun getSecretFromSecretManager(secretName: GCPSecretManagerKey): String {
         val secretVersionName = SecretVersionName.of(secretManagerProjectId, secretName.key, "latest")
         return client.accessSecretVersion(secretVersionName).payload.data.toStringUtf8()
@@ -36,5 +38,6 @@ class GCPSecretFactory(
 
 private enum class GCPSecretManagerKey(val key: String) {
     HYPERSYS_CLIENT_ID("hypersysClientId"),
-    HYPERSYS_CLIENT_SECRET("hypersysClientSecret")
+    HYPERSYS_CLIENT_SECRET("hypersysClientSecret"),
+    QOMON_API_KEY("qomonApiKey");
 }
