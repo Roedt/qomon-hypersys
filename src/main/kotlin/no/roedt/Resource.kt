@@ -36,4 +36,9 @@ class Resource(
             throw IllegalStateException("Forventa ikkje ekte hypersysdata")
         }
     }
+
+    @Path("ping")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    fun ping() = "pong"
 }
