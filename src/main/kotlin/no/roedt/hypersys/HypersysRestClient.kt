@@ -11,6 +11,7 @@ import jakarta.ws.rs.PathParam
 import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import no.roedt.hypersys.externalModel.IsMember
+import no.roedt.hypersys.externalModel.Member
 import no.roedt.hypersys.externalModel.Organ
 import no.roedt.hypersys.externalModel.Organisasjonsledd
 import no.roedt.hypersys.externalModel.Profile
@@ -42,7 +43,7 @@ interface HypersysRestClient {
     ): GyldigSystemToken
 
     @GET
-    @Path("/membership/api/membership/{hypersysLokallagId}/{aar}/")
+    @Path("/old/membership/api/membership/{hypersysLokallagId}/{aar}/")
     fun hentMedlemmerILag(
         @PathParam("hypersysLokallagId") hypersysLokallagId: Int,
         @PathParam("aar") aar: Int = LocalDate.now().year,
@@ -93,4 +94,15 @@ interface HypersysRestClient {
     fun hentProfil(
         @HeaderParam("Authorization") token: String // Bearer
     ) : Profile
+
+    @GET
+    @Path("old/auth/api/user/{userId}/")
+    fun hentBruker(
+        @HeaderParam("Authorization") token: String, // Bearer
+        @PathParam("userId") userId: String
+    ) : HentBruker
 }
+
+data class HentBruker(
+    val email: String
+)
