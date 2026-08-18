@@ -84,7 +84,7 @@ class QomonService(
         }
     }
 
-    fun giRolle(nyRolle: Role, id: QomonBrukerId) {
+    fun giRolle(nyRolle: Role, id: QomonBrukerId): Endring {
         val noverandeRolle = klient.getUser(authorization(), id.id)
         val roleData = noverandeRolle.data.user.role_data
         if (roleData.order == 4) {
@@ -93,13 +93,22 @@ class QomonService(
 //                roleId = nyRolle.order,
 //                userId = id.id
 //            ))
+            return Endring.NY_ROLLE
         }
-        else if (roleData.order in setOf(0, 1, 2, 3)) {
+        else if (roleData.order == 3) {
+            println("Personen med id ${id.id} har allereie rolle $roleData. Ingenting å endre, så gjer ingenting.")
+            return Endring.INGEN
+        }
+        else if (roleData.order in setOf(0, 1, 2)) {
             println("Personen med id ${id.id} har allereie rolle $roleData. Gjer ingenting, for vi vil ikkje nedgradere.")
-            return
+            return Endring.INGEN
         } else {
             throw IllegalStateException("Personen med id ${id.id} hadde uforventa rolle i Qomon: $roleData. Veit ikkje korleis vi skal handtere dette, så kastar exception")
         }
+    }
+
+    enum class Endring {
+        INGEN, NY_ROLLE
     }
 }
 

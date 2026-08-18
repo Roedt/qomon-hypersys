@@ -10,7 +10,6 @@ enum class Hypersysverv(val id: Int) {
     StyremedlemIKommuneOrganisasjon(36),
     Lyttekaptein(81),
     Oekonomiansvarleg(4),
-    Samordningsstyremedlem(65),
 
     // Øvrige verv:
     Vara(6),
@@ -39,6 +38,7 @@ enum class Hypersysverv(val id: Int) {
     FjerdekandidatTilStortinget(62),
     FemtekandidatTilStortinget(63),
     Stortingslistekandidat(64),
+    Samordningsstyremedlem(65),
     FoersteLSVara(69),
     UtvalgsmedlemLokalt(72),
     Komitemedlem(73),

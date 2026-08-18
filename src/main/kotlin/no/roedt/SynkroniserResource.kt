@@ -29,16 +29,22 @@ class SynkroniserResource(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    fun synkroniser() {
-        logger.info("Startar synkronisering")
-//        val nyeFolkILag = finnLagOgFolkAaOppdatere()
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/lag")
+    fun synkroniserLag() {
+        logger.info("Startar synkronisering av lag")
+        val nyeFolkILag = finnLagOgFolkAaOppdatere()
+        qomonService.oppdaterTeams(nyeFolkILag)
+        logger.info("Ferdig med synkronisering, oppdaterte folk i ${nyeFolkILag.size} lag")
+    }
 
-//        qomonService.oppdaterTeams(nyeFolkILag)
-
-        oppdaterVerv()
-
-//        logger.info("Ferdig med synkronisering, oppdaterte folk i ${nyeFolkILag.size} lag")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/verv")
+    fun synkroniserVerv() {
+        logger.info("Startar synkronisering av verv")
+        val verv = oppdaterVerv()
+        logger.info("Ferdig med synkronisering av verv. Ga ny rolle til ${verv.count { it == QomonService.Endring.NY_ROLLE }}, og inga endring på resterande ${verv.count { it == QomonService.Endring.INGEN }}")
     }
 
     private fun finnLagOgFolkAaOppdatere(): Map<QomonTeamId, List<Pair<HypersysMedlemId, QomonBrukerId>>> {
@@ -95,7 +101,7 @@ class SynkroniserResource(
         return lagsstruktur
     }
 
-    private fun oppdaterVerv() {
+    private fun oppdaterVerv(): List<QomonService.Endring> {
         val interessanteVerv = setOf(
             Hypersysverv.Lagsleder,
             Hypersysverv.Fylkesleder,
@@ -105,12 +111,12 @@ class SynkroniserResource(
             Hypersysverv.StyrelederIKommuneorganisasjon,
             Hypersysverv.StyremedlemIKommuneOrganisasjon,
             Hypersysverv.Lyttekaptein,
-            Hypersysverv.Oekonomiansvarleg,
-            Hypersysverv.Samordningsstyremedlem
+            Hypersysverv.Oekonomiansvarleg
         )
         val personerAaGiVerv = hentAlleLagFraHypersys().keys.filterNot { it.id == topplag }.flatMap { lag ->
+            println("Finn folk med verv i lag ${lag.name} (${lag.id})")
             val verv = hypersysService.hentVerv(lag.id).filter { verv -> verv.role_type in interessanteVerv.map { it.id } }
-            hypersysService.hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }
+            hypersysService.hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }.also { println("Fann ${it.size} medlemmar med relevante verv i ${lag.name} (${lag.id}") }
         }.distinct()
 
         val nyRolle = qomonService.roller().data.organisator()
@@ -119,10 +125,11 @@ class SynkroniserResource(
 
         val folkFraQomonIHypersys = personerAaGiVerv.filter { folkIQomon.map { it.mail }.contains(it.email) }
 
-        folkFraQomonIHypersys.forEach { person ->
+        val endringer = folkFraQomonIHypersys.map { person ->
             val qomonBrukerId = folkIQomon.finnQomonId(person)
             qomonService.giRolle(nyRolle, qomonBrukerId)
         }
+        return endringer
     }
 
     val overstyringer = mapOf( // Frå Hypersys til Qomon
