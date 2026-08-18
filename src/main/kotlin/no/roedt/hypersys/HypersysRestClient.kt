@@ -16,6 +16,7 @@ import no.roedt.hypersys.externalModel.Organ
 import no.roedt.hypersys.externalModel.Organisasjonsledd
 import no.roedt.hypersys.externalModel.Profile
 import no.roedt.hypersys.externalModel.SingleOrgan
+import no.roedt.hypersys.externalModel.Verv
 import no.roedt.hypersys.externalModel.membership.Membership
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 import java.time.LocalDate
@@ -101,6 +102,13 @@ interface HypersysRestClient {
         @HeaderParam("Authorization") token: String, // Bearer
         @PathParam("userId") userId: String
     ) : HentBruker
+
+    @GET
+    @Path("old/org/api/roles-current/{orgId}/")
+    fun hentVerv(
+        @HeaderParam("Authorization") token: String, // Bearer
+        @PathParam("orgId") orgId: String
+    ) : List<Verv>
 }
 
 data class HentBruker(

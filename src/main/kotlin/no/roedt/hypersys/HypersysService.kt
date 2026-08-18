@@ -4,6 +4,7 @@ import io.quarkus.arc.properties.IfBuildProperty
 import jakarta.enterprise.context.Dependent
 import no.roedt.SecretFactory
 import no.roedt.hypersys.externalModel.Organisasjonsledd
+import no.roedt.hypersys.externalModel.Verv
 import no.roedt.hypersys.externalModel.membership.Membership
 import org.eclipse.microprofile.rest.client.inject.RestClient
 import org.slf4j.LoggerFactory
@@ -15,6 +16,7 @@ interface HypersysService {
     fun hentAlleLag(): List<Organisasjonsledd>
     fun hentBruker(id: Int): Any
     fun hentMedlemmer(id: Int): List<Membership>
+    fun hentVerv(id: Int): List<Verv>
 }
 
 @Dependent
@@ -43,6 +45,8 @@ class EkteHypersysService(
 
     override fun hentBruker(id: Int) = hypersysKlient.hentBruker("Bearer ${hentBearerToken().access_token}", id.toString())
     override fun hentMedlemmer(id: Int) = hypersysKlient.hentMedlemmerILag(hypersysLokallagId = id, aar = LocalDate.now().year, token = "Bearer ${hentBearerToken().access_token}")
+
+    override fun hentVerv(id: Int) = hypersysKlient.hentVerv("Bearer ${hentBearerToken().access_token}", orgId = id.toString())
 
     private fun finnEposter(
         bearerToken: String,
@@ -76,7 +80,8 @@ class EkteHypersysService(
 @IfBuildProperty(name = "hypersys.ekte", stringValue = "false")
 class FakeHypersysService : HypersysService {
     override fun hentFraHypersys(lag: String): Map<String, List<String?>> = mapOf("Testlag2" to listOf("raudtosloteknisk@gmail.com"))
-    override fun hentAlleLag(): List<Organisasjonsledd> = listOf()
+    override fun hentAlleLag(): List<Organisasjonsledd> = emptyList()
     override fun hentBruker(id: Int): Any = id // TODO ved typing
-    override fun hentMedlemmer(id: Int): List<Membership> = listOf()
+    override fun hentMedlemmer(id: Int): List<Membership> = emptyList()
+    override fun hentVerv(id: Int): List<Verv> = emptyList()
  }

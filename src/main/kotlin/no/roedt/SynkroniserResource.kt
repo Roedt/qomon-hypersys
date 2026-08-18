@@ -6,6 +6,7 @@ import jakarta.ws.rs.Path
 import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import no.roedt.hypersys.HypersysService
+import no.roedt.hypersys.Hypersysverv
 import no.roedt.hypersys.externalModel.HypersysLagId
 import no.roedt.hypersys.externalModel.HypersysMedlemId
 import no.roedt.hypersys.externalModel.Organisasjonsledd
@@ -31,10 +32,36 @@ class SynkroniserResource(
     @Produces(MediaType.APPLICATION_JSON)
     fun synkroniser() {
         logger.info("Startar synkronisering")
-        val nyeFolkILag = finnLagOgFolkAaOppdatere()
+//        val nyeFolkILag = finnLagOgFolkAaOppdatere()
 
-        qomonService.oppdaterTeams(nyeFolkILag)
-        logger.info("Ferdig med synkronisering, oppdaterte folk i ${nyeFolkILag.size} lag")
+//        qomonService.oppdaterTeams(nyeFolkILag)
+
+        val alleLag = hentAlleLagFraHypersys()
+        val interessanteVerv = setOf(
+            Hypersysverv.Fylkesleder,
+            Hypersysverv.Fylkesleder,
+            Hypersysverv.Nestleder,
+            Hypersysverv.Styremedlem,
+            Hypersysverv.StyremedlemMedKurs,
+            Hypersysverv.StyrelederIKommuneorganisasjon,
+            Hypersysverv.StyremedlemIKommuneOrganisasjon,
+            Hypersysverv.Lyttekaptein,
+            Hypersysverv.Oekonomiansvarleg,
+            Hypersysverv.Samordningsstyremedlem
+        )
+        val personerAaGiVerv = alleLag.keys.take(5).flatMap { lag ->
+            val verv = hypersysService.hentVerv(lag.id).filter { verv -> verv.role_type in interessanteVerv.map { it.id }}
+            val personerMedVerv = hypersysService.hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }
+            personerMedVerv.map { it.member_id }
+        }.distinct()
+
+        val nyRolle = qomonService.roller().data.roles.single { it.name == "Organisator" }
+        personerAaGiVerv.forEach {
+            val qomonBrukerId = QomonBrukerId(169824) // TODO: finn ordentleg, som i oppdateringsmetoden under
+            qomonService.giRolle(nyRolle, qomonBrukerId)
+        }
+
+//        logger.info("Ferdig med synkronisering, oppdaterte folk i ${nyeFolkILag.size} lag")
     }
 
     private fun finnLagOgFolkAaOppdatere(): Map<QomonTeamId, List<Pair<HypersysMedlemId, QomonBrukerId>>> {

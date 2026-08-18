@@ -13,10 +13,12 @@ import jakarta.ws.rs.core.MediaType
 import no.roedt.qomon.externalModel.CreateTeamRequest
 import no.roedt.qomon.externalModel.CreateTeamResponse
 import no.roedt.qomon.externalModel.GetTeamResponse
+import no.roedt.qomon.externalModel.GetUserResponse
 import no.roedt.qomon.externalModel.GetUsersResponse
 import no.roedt.qomon.externalModel.PatchTeamRequest
+import no.roedt.qomon.externalModel.RolePatchRequest
+import no.roedt.qomon.externalModel.RolePatchResponse
 import no.roedt.qomon.externalModel.RolesResponse
-import no.roedt.qomon.externalModel.Team
 import no.roedt.qomon.externalModel.TeamsResponse
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 
@@ -50,9 +52,20 @@ interface QomonRestClient {
     @Path("/users")
     fun getUsers(@HeaderParam("Authorization") authorization: String) : GetUsersResponse
 
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/users/{id}")
+    fun getUser(@HeaderParam("Authorization") authorization: String, @PathParam("id") id: Int): GetUserResponse
+
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/teams")
     fun oppdaterTeam(@HeaderParam("Authorization") authorization: String, oppdatert: PatchTeamRequest): CreateTeamResponse
+
+    @PATCH
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/users/role")
+    fun giRolle(@HeaderParam("Authorization") authorization: String, request: RolePatchRequest): RolePatchResponse
 }

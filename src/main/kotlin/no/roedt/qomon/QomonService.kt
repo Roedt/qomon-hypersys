@@ -8,6 +8,8 @@ import no.roedt.qomon.externalModel.CreateTeamRequest
 import no.roedt.qomon.externalModel.CreateTeamResponseData
 import no.roedt.qomon.externalModel.PatchTeamData
 import no.roedt.qomon.externalModel.PatchTeamRequest
+import no.roedt.qomon.externalModel.Role
+import no.roedt.qomon.externalModel.RolePatchRequest
 import no.roedt.qomon.externalModel.RolesResponse
 import no.roedt.qomon.externalModel.Team
 import no.roedt.qomon.externalModel.TeamUser
@@ -79,6 +81,24 @@ class QomonService(
                 logger.info("Ingen endringar i brukarar for lag ${it.key}. Gjer ingenting med dei.")
             }
 
+        }
+    }
+
+    fun giRolle(nyRolle: Role, id: QomonBrukerId) {
+        val noverandeRolle = klient.getUser(authorization(), id.id)
+        val roleData = noverandeRolle.data.user.role_data
+        if (roleData.order == 4) {
+            println("Personen med id ${id.id} har rolla aktivist. Oppgraderer til organisator")
+//            klient.giRolle(authorization(), RolePatchRequest(
+//                roleId = nyRolle.order,
+//                userId = id.id
+//            ))
+        }
+        else if (roleData.order in setOf(0, 1, 2, 3)) {
+            println("Personen med id ${id.id} har allereie rolle $roleData. Gjer ingenting, for vi vil ikkje nedgradere.")
+            return
+        } else {
+            throw IllegalStateException("Personen med id ${id.id} hadde uforventa rolle i Qomon: $roleData. Veit ikkje korleis vi skal handtere dette, så kastar exception")
         }
     }
 }
