@@ -97,7 +97,7 @@ class SynkroniserResource(
 
     private fun oppdaterVerv() {
         val interessanteVerv = setOf(
-            Hypersysverv.Fylkesleder,
+            Hypersysverv.Lagsleder,
             Hypersysverv.Fylkesleder,
             Hypersysverv.Nestleder,
             Hypersysverv.Styremedlem,
