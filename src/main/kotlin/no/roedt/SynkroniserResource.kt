@@ -36,30 +36,7 @@ class SynkroniserResource(
 
 //        qomonService.oppdaterTeams(nyeFolkILag)
 
-        val alleLag = hentAlleLagFraHypersys()
-        val interessanteVerv = setOf(
-            Hypersysverv.Fylkesleder,
-            Hypersysverv.Fylkesleder,
-            Hypersysverv.Nestleder,
-            Hypersysverv.Styremedlem,
-            Hypersysverv.StyremedlemMedKurs,
-            Hypersysverv.StyrelederIKommuneorganisasjon,
-            Hypersysverv.StyremedlemIKommuneOrganisasjon,
-            Hypersysverv.Lyttekaptein,
-            Hypersysverv.Oekonomiansvarleg,
-            Hypersysverv.Samordningsstyremedlem
-        )
-        val personerAaGiVerv = alleLag.keys.take(5).flatMap { lag ->
-            val verv = hypersysService.hentVerv(lag.id).filter { verv -> verv.role_type in interessanteVerv.map { it.id }}
-            val personerMedVerv = hypersysService.hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }
-            personerMedVerv.map { it.member_id }
-        }.distinct()
-
-        val nyRolle = qomonService.roller().data.roles.single { it.name == "Organisator" }
-        personerAaGiVerv.forEach {
-            val qomonBrukerId = QomonBrukerId(169824) // TODO: finn ordentleg, som i oppdateringsmetoden under
-            qomonService.giRolle(nyRolle, qomonBrukerId)
-        }
+        oppdaterVerv()
 
 //        logger.info("Ferdig med synkronisering, oppdaterte folk i ${nyeFolkILag.size} lag")
     }
@@ -116,6 +93,36 @@ class SynkroniserResource(
         }
 
         return lagsstruktur
+    }
+
+    private fun oppdaterVerv() {
+        val interessanteVerv = setOf(
+            Hypersysverv.Fylkesleder,
+            Hypersysverv.Fylkesleder,
+            Hypersysverv.Nestleder,
+            Hypersysverv.Styremedlem,
+            Hypersysverv.StyremedlemMedKurs,
+            Hypersysverv.StyrelederIKommuneorganisasjon,
+            Hypersysverv.StyremedlemIKommuneOrganisasjon,
+            Hypersysverv.Lyttekaptein,
+            Hypersysverv.Oekonomiansvarleg,
+            Hypersysverv.Samordningsstyremedlem
+        )
+        val personerAaGiVerv = hentAlleLagFraHypersys().keys.flatMap { lag ->
+            val verv = hypersysService.hentVerv(lag.id).filter { verv -> verv.role_type in interessanteVerv.map { it.id } }
+            hypersysService.hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }
+        }.distinct()
+
+        val nyRolle = qomonService.roller().data.organisator()
+
+        val folkIQomon = qomonService.hentFolk().data.users
+
+        val folkFraQomonIHypersys = personerAaGiVerv.filter { folkIQomon.map { it.mail }.contains(it.email) }
+
+        folkFraQomonIHypersys.forEach { person ->
+            val qomonBrukerId = folkIQomon.finnQomonId(person)
+            qomonService.giRolle(nyRolle, qomonBrukerId)
+        }
     }
 
     val overstyringer = mapOf( // Frå Hypersys til Qomon
