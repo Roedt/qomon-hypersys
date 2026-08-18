@@ -108,7 +108,7 @@ class SynkroniserResource(
             Hypersysverv.Oekonomiansvarleg,
             Hypersysverv.Samordningsstyremedlem
         )
-        val personerAaGiVerv = hentAlleLagFraHypersys().keys.flatMap { lag ->
+        val personerAaGiVerv = hentAlleLagFraHypersys().keys.filterNot { it.id == topplag }.flatMap { lag ->
             val verv = hypersysService.hentVerv(lag.id).filter { verv -> verv.role_type in interessanteVerv.map { it.id } }
             hypersysService.hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }
         }.distinct()
