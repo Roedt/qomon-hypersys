@@ -1,5 +1,6 @@
 package no.roedt.qomon.externalModel
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.quarkus.runtime.annotations.RegisterForReflection
 
 @RegisterForReflection
@@ -20,6 +21,7 @@ data class Roles(val count: Int, val roles: List<Role>) {
  */
 @RegisterForReflection
 data class Role(
+    val id: Int,
     val name: String?,
     val order: Int,
     val type: RoleType,
@@ -35,9 +37,13 @@ enum class Status {
 
 @RegisterForReflection
 data class RolePatchRequest(
-    val roleId: Int,
-    val userId: Int
-)
+    @JsonProperty("data") val data: Data
+) {
+    data class Data(
+        @JsonProperty("role_id") val roleId: Int,
+        @JsonProperty("user_id") val userId: Int
+    )
+}
 
 @RegisterForReflection
 data class RolePatchResponse(
