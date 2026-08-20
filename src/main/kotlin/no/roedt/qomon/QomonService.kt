@@ -90,10 +90,12 @@ class QomonService(
         val roleData = noverandeRolle.data.user.role_data
         if (roleData.order == 4) {
             println("Personen med id ${id.id} har rolla aktivist. Oppgraderer til organisator")
-//            klient.giRolle(authorization(), RolePatchRequest(
-//                roleId = nyRolle.order,
-//                userId = id.id
-//            ))
+            klient.giRolle(authorization(), RolePatchRequest(
+                RolePatchRequest.Data(
+                    roleId = nyRolle.id,
+                    userId = id.id
+                )
+            ))
             return Endring.NY_ROLLE
         }
         else if (roleData.order == 3) {
