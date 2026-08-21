@@ -1,8 +1,13 @@
 package no.roedt.qomon.externalModel
 
+import no.roedt.hypersys.externalModel.membership.Membership
+import no.roedt.qomon.QomonBrukerId
+
 data class GetUsersResponse(val status: Status, val data: GetUsersData)
 
 data class GetUsersData(val count: Int, val users: List<User>)
+
+fun List<User>.finnQomonId(hypersys: Membership) = QomonBrukerId(this.first { q -> q.mail == hypersys.email }.id)
 
 data class User(val id: Int, val mail: String?, val firstname: String, val surname: String, val postalcode: String? = null, val role_data: RoleData)
 

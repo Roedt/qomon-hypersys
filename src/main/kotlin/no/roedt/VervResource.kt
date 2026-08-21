@@ -8,10 +8,8 @@ import jakarta.ws.rs.core.MediaType
 import no.roedt.hypersys.HypersysService
 import no.roedt.hypersys.Hypersysverv
 import no.roedt.hypersys.externalModel.Organisasjonsledd
-import no.roedt.hypersys.externalModel.membership.Membership
-import no.roedt.qomon.QomonBrukerId
 import no.roedt.qomon.QomonService
-import no.roedt.qomon.externalModel.User
+import no.roedt.qomon.externalModel.finnQomonId
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.slf4j.LoggerFactory
 import kotlin.collections.forEach
@@ -94,5 +92,3 @@ class VervResource(
         return endringer
     }
 }
-
-private fun List<User>.finnQomonId(hypersys: Membership) = QomonBrukerId(this.first { q -> q.mail == hypersys.email }.id)

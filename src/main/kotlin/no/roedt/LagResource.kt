@@ -13,7 +13,7 @@ import no.roedt.hypersys.externalModel.membership.Membership
 import no.roedt.qomon.QomonBrukerId
 import no.roedt.qomon.QomonService
 import no.roedt.qomon.QomonTeamId
-import no.roedt.qomon.externalModel.User
+import no.roedt.qomon.externalModel.finnQomonId
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.slf4j.LoggerFactory
 import kotlin.collections.forEach
@@ -122,5 +122,3 @@ private fun MutableMap<QomonTeamId, MutableList<Pair<HypersysMedlemId, QomonBruk
     this.putIfAbsent(key, mutableListOf())
     this[key]!!.add(Pair(hypersysMedlemId, qomonBrukerId))
 }
-
-private fun List<User>.finnQomonId(hypersys: Membership) = QomonBrukerId(this.first { q -> q.mail == hypersys.email }.id)
