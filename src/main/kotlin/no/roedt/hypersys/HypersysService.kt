@@ -15,7 +15,6 @@ import kotlin.io.encoding.Base64
 interface HypersysService {
     fun hentFraHypersys(lag: String): Map<String, List<String?>>
     fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>>
-    fun hentBruker(id: Int): Any
     fun hentMedlemmer(id: Int): List<Membership>
     fun hentVerv(id: Int): List<Verv>
     fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership>
@@ -72,7 +71,6 @@ class EkteHypersysService(
         return lagsstruktur
     }
 
-    override fun hentBruker(id: Int) = hypersysKlient.hentBruker("Bearer ${hentBearerToken().access_token}", id.toString())
     override fun hentMedlemmer(id: Int) = hypersysKlient.hentMedlemmerILag(hypersysLokallagId = id, aar = LocalDate.now().year, token = "Bearer ${hentBearerToken().access_token}")
 
     override fun hentVerv(id: Int) = hypersysKlient.hentVerv("Bearer ${hentBearerToken().access_token}", orgId = id.toString())
@@ -118,7 +116,6 @@ class EkteHypersysService(
 class FakeHypersysService : HypersysService {
     override fun hentFraHypersys(lag: String): Map<String, List<String?>> = mapOf("Testlag2" to listOf("raudtosloteknisk@gmail.com"))
     override fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>> = emptyMap()
-    override fun hentBruker(id: Int): Any = id // TODO ved typing
     override fun hentMedlemmer(id: Int): List<Membership> = emptyList()
     override fun hentVerv(id: Int): List<Verv> = emptyList()
     override fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership> = emptyList()
