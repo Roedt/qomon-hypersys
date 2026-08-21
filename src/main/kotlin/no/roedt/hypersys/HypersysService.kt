@@ -9,11 +9,13 @@ import no.roedt.hypersys.externalModel.membership.Membership
 import org.eclipse.microprofile.rest.client.inject.RestClient
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import kotlin.collections.contains
 import kotlin.io.encoding.Base64
 
 interface HypersysService {
     fun hentFraHypersys(lag: String): Map<String, List<String?>>
     fun hentAlleLag(): List<Organisasjonsledd>
+    fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>>
     fun hentBruker(id: Int): Any
     fun hentMedlemmer(id: Int): List<Membership>
     fun hentVerv(id: Int): List<Verv>
@@ -42,6 +44,35 @@ class EkteHypersysService(
     }
 
     override fun hentAlleLag() = hypersysKlient.hentAlleLokallag("Bearer ${hentBearerToken().access_token}")
+
+    override fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>> {
+        val alleLag = hentAlleLag()
+        val toppnivaaLaget = alleLag.first { it.id == topplag }
+        val lagsstruktur = mutableMapOf<Organisasjonsledd, List<Organisasjonsledd>>()
+        lagsstruktur[toppnivaaLaget] = emptyList()
+
+        // Fylke
+        val lagPaaNivaa1: List<Organisasjonsledd> = alleLag.filter { it.parent == topplag }
+        lagPaaNivaa1.forEach { lagsstruktur[it] = listOf(toppnivaaLaget) }
+
+        // Kommunelag
+        val lagPaaNivaa2 = alleLag.filter { it.parent in lagPaaNivaa1.map { it.id } }
+        lagPaaNivaa2.forEach { lag ->
+            val forelder = lagsstruktur.entries.firstOrNull { it.key.id == lag.parent }
+            val grandforeldre: List<Organisasjonsledd> = forelder?.value ?: emptyList()
+            lagsstruktur[lag] = grandforeldre + listOfNotNull(forelder?.key)
+        }
+
+        // Lokallag
+        val lagPaaNivaa3 = alleLag.filter { it.parent in lagPaaNivaa2.map { it.id } }
+        lagPaaNivaa3.forEach { lag ->
+            val forelder = lagsstruktur.entries.firstOrNull { it.key.id == lag.parent }
+            val grandforeldre: List<Organisasjonsledd> = forelder?.value ?: emptyList()
+            lagsstruktur[lag] = grandforeldre + listOfNotNull(forelder?.key)
+        }
+
+        return lagsstruktur
+    }
 
     override fun hentBruker(id: Int) = hypersysKlient.hentBruker("Bearer ${hentBearerToken().access_token}", id.toString())
     override fun hentMedlemmer(id: Int) = hypersysKlient.hentMedlemmerILag(hypersysLokallagId = id, aar = LocalDate.now().year, token = "Bearer ${hentBearerToken().access_token}")
@@ -81,6 +112,7 @@ class EkteHypersysService(
 class FakeHypersysService : HypersysService {
     override fun hentFraHypersys(lag: String): Map<String, List<String?>> = mapOf("Testlag2" to listOf("raudtosloteknisk@gmail.com"))
     override fun hentAlleLag(): List<Organisasjonsledd> = emptyList()
+    override fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>> = emptyMap()
     override fun hentBruker(id: Int): Any = id // TODO ved typing
     override fun hentMedlemmer(id: Int): List<Membership> = emptyList()
     override fun hentVerv(id: Int): List<Verv> = emptyList()

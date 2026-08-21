@@ -3,12 +3,9 @@ package no.roedt
 import jakarta.enterprise.context.Dependent
 import no.roedt.hypersys.HypersysService
 import no.roedt.hypersys.Hypersysverv
-import no.roedt.hypersys.externalModel.Organisasjonsledd
 import no.roedt.qomon.QomonService
 import no.roedt.qomon.externalModel.finnQomonId
 import org.eclipse.microprofile.config.inject.ConfigProperty
-import kotlin.collections.contains
-import kotlin.collections.forEach
 
 @Dependent
 class VervService(
@@ -28,7 +25,7 @@ class VervService(
             Hypersysverv.Lyttekaptein,
             Hypersysverv.Oekonomiansvarleg
         )
-        val personerAaGiVerv = hentAlleLagFraHypersys().keys.filterNot { it.id == topplag }.flatMap { lag ->
+        val personerAaGiVerv = hypersysService.hentAlleLagIHierarki(topplag).keys.filterNot { it.id == topplag }.flatMap { lag ->
             println("Finn folk med verv i lag ${lag.name} (${lag.id})")
             val verv = hypersysService.hentVerv(lag.id).filter { verv -> verv.role_type in interessanteVerv.map { it.id } }
             hypersysService.hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }.also { println("Fann ${it.size} medlemmar med relevante verv i ${lag.name} (${lag.id}") }
@@ -45,34 +42,5 @@ class VervService(
             qomonService.giRolle(nyRolle, qomonBrukerId)
         }
         return endringer
-    }
-
-    private fun hentAlleLagFraHypersys(): Map<Organisasjonsledd, List<Organisasjonsledd>> {
-        val alleLag = hypersysService.hentAlleLag()
-        val toppnivaaLaget = alleLag.first { it.id == topplag }
-        val lagsstruktur = mutableMapOf<Organisasjonsledd, List<Organisasjonsledd>>()
-        lagsstruktur[toppnivaaLaget] = emptyList()
-
-        // Fylke
-        val lagPaaNivaa1: List<Organisasjonsledd> = alleLag.filter { it.parent == topplag }
-        lagPaaNivaa1.forEach { lagsstruktur[it] = listOf(toppnivaaLaget) }
-
-        // Kommunelag
-        val lagPaaNivaa2 = alleLag.filter { it.parent in lagPaaNivaa1.map { it.id } }
-        lagPaaNivaa2.forEach { lag ->
-            val forelder = lagsstruktur.entries.firstOrNull { it.key.id == lag.parent }
-            val grandforeldre: List<Organisasjonsledd> = forelder?.value ?: emptyList()
-            lagsstruktur[lag] = grandforeldre + listOfNotNull(forelder?.key)
-        }
-
-        // Lokallag
-        val lagPaaNivaa3 = alleLag.filter { it.parent in lagPaaNivaa2.map { it.id } }
-        lagPaaNivaa3.forEach { lag ->
-            val forelder = lagsstruktur.entries.firstOrNull { it.key.id == lag.parent }
-            val grandforeldre: List<Organisasjonsledd> = forelder?.value ?: emptyList()
-            lagsstruktur[lag] = grandforeldre + listOfNotNull(forelder?.key)
-        }
-
-        return lagsstruktur
     }
 }

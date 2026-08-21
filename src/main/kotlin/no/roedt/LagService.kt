@@ -4,14 +4,12 @@ import jakarta.enterprise.context.Dependent
 import no.roedt.hypersys.HypersysService
 import no.roedt.hypersys.externalModel.HypersysLagId
 import no.roedt.hypersys.externalModel.HypersysMedlemId
-import no.roedt.hypersys.externalModel.Organisasjonsledd
 import no.roedt.hypersys.externalModel.membership.Membership
 import no.roedt.qomon.QomonBrukerId
 import no.roedt.qomon.QomonService
 import no.roedt.qomon.QomonTeamId
 import no.roedt.qomon.externalModel.finnQomonId
 import org.eclipse.microprofile.config.inject.ConfigProperty
-import kotlin.collections.contains
 import kotlin.collections.forEach
 
 @Dependent
@@ -22,7 +20,7 @@ class LagService(
 ) {
 
     fun finnLagOgFolkAaOppdatere(): Map<QomonTeamId, List<Pair<HypersysMedlemId, QomonBrukerId>>> {
-        val alleLag = hentAlleLagFraHypersys()
+        val alleLag = hypersysService.hentAlleLagIHierarki(topplag)
         qomonService.opprettLag(alleLag.keys)
 
         val folkIQomon = qomonService.hentFolk().data.users
@@ -44,35 +42,6 @@ class LagService(
         }
 
         return nyeFolkILag
-    }
-
-    private fun hentAlleLagFraHypersys(): Map<Organisasjonsledd, List<Organisasjonsledd>> {
-        val alleLag = hypersysService.hentAlleLag()
-        val toppnivaaLaget = alleLag.first { it.id == topplag }
-        val lagsstruktur = mutableMapOf<Organisasjonsledd, List<Organisasjonsledd>>()
-        lagsstruktur[toppnivaaLaget] = emptyList()
-
-        // Fylke
-        val lagPaaNivaa1: List<Organisasjonsledd> = alleLag.filter { it.parent == topplag }
-        lagPaaNivaa1.forEach { lagsstruktur[it] = listOf(toppnivaaLaget) }
-
-        // Kommunelag
-        val lagPaaNivaa2 = alleLag.filter { it.parent in lagPaaNivaa1.map { it.id } }
-        lagPaaNivaa2.forEach { lag ->
-            val forelder = lagsstruktur.entries.firstOrNull { it.key.id == lag.parent }
-            val grandforeldre: List<Organisasjonsledd> = forelder?.value ?: emptyList()
-            lagsstruktur[lag] = grandforeldre + listOfNotNull(forelder?.key)
-        }
-
-        // Lokallag
-        val lagPaaNivaa3 = alleLag.filter { it.parent in lagPaaNivaa2.map { it.id } }
-        lagPaaNivaa3.forEach { lag ->
-            val forelder = lagsstruktur.entries.firstOrNull { it.key.id == lag.parent }
-            val grandforeldre: List<Organisasjonsledd> = forelder?.value ?: emptyList()
-            lagsstruktur[lag] = grandforeldre + listOfNotNull(forelder?.key)
-        }
-
-        return lagsstruktur
     }
 
     val overstyringer = mapOf( // Frå Hypersys til Qomon
