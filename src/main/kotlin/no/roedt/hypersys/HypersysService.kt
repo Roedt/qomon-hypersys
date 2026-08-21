@@ -14,7 +14,6 @@ import kotlin.io.encoding.Base64
 
 interface HypersysService {
     fun hentFraHypersys(lag: String): Map<String, List<String?>>
-    fun hentAlleLag(): List<Organisasjonsledd>
     fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>>
     fun hentBruker(id: Int): Any
     fun hentMedlemmer(id: Int): List<Membership>
@@ -44,10 +43,8 @@ class EkteHypersysService(
         return mapOf()
     }
 
-    override fun hentAlleLag() = hypersysKlient.hentAlleLokallag("Bearer ${hentBearerToken().access_token}")
-
     override fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>> {
-        val alleLag = hentAlleLag()
+        val alleLag = hypersysKlient.hentAlleLokallag("Bearer ${hentBearerToken().access_token}")
         val toppnivaaLaget = alleLag.first { it.id == topplag }
         val lagsstruktur = mutableMapOf<Organisasjonsledd, List<Organisasjonsledd>>()
         lagsstruktur[toppnivaaLaget] = emptyList()
@@ -120,7 +117,6 @@ class EkteHypersysService(
 @IfBuildProperty(name = "hypersys.ekte", stringValue = "false")
 class FakeHypersysService : HypersysService {
     override fun hentFraHypersys(lag: String): Map<String, List<String?>> = mapOf("Testlag2" to listOf("raudtosloteknisk@gmail.com"))
-    override fun hentAlleLag(): List<Organisasjonsledd> = emptyList()
     override fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>> = emptyMap()
     override fun hentBruker(id: Int): Any = id // TODO ved typing
     override fun hentMedlemmer(id: Int): List<Membership> = emptyList()
