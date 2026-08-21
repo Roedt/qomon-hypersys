@@ -12,12 +12,16 @@ import org.slf4j.LoggerFactory
 
 @ApplicationScoped
 @Path("/")
-class Resource(
+class StyremedlemmerResource(
     val hypersysService: HypersysService,
     val qomonService: QomonService,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    /*
+    Denne brukast for å hente ut alle som skal få tilgang til mappeområde.
+    Foreløpig ikkje i bruk
+     */
     @Path("integrer")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
