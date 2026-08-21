@@ -118,6 +118,7 @@ class QomonService(
 private val overstyrteNavn: Map<QomonTeamNavn, HypersysLagNavn> = mapOf(
     QomonTeamNavn("Kinn - kommuneorganisasjon") to HypersysLagNavn("Kinn - kommuneorganisasjon i Rødt"),
     QomonTeamNavn("Raudt Aure") to HypersysLagNavn("Rødt Aure"),
+    QomonTeamNavn("Tana") to HypersysLagNavn("Rødt Tana og Nesseby"),
 )
 
 @JvmInline
