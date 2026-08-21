@@ -23,7 +23,7 @@ import no.roedt.qomon.externalModel.TeamsResponse
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 
 @Dependent
-@RegisterRestClient
+@RegisterRestClient(configKey = "qomon")
 interface QomonRestClient {
     @GET
     @Produces(MediaType.APPLICATION_JSON)

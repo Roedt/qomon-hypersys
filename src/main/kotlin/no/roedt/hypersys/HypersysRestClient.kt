@@ -22,7 +22,7 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 import java.time.LocalDate
 
 @Dependent
-@RegisterRestClient
+@RegisterRestClient(configKey = "hypersys")
 interface HypersysRestClient {
 
     @POST
