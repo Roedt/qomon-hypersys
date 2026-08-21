@@ -4,7 +4,6 @@ import io.quarkus.arc.properties.IfBuildProperty
 import jakarta.enterprise.context.Dependent
 import no.roedt.SecretFactory
 import no.roedt.hypersys.externalModel.Organisasjonsledd
-import no.roedt.hypersys.externalModel.Verv
 import no.roedt.hypersys.externalModel.membership.Membership
 import org.eclipse.microprofile.rest.client.inject.RestClient
 import org.slf4j.LoggerFactory
@@ -16,7 +15,6 @@ interface HypersysService {
     fun hentFraHypersys(lag: String): Map<String, List<String?>>
     fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>>
     fun hentMedlemmer(id: Int): List<Membership>
-    fun hentVerv(id: Int): List<Verv>
     fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership>
 }
 
@@ -73,7 +71,7 @@ class EkteHypersysService(
 
     override fun hentMedlemmer(id: Int) = hypersysKlient.hentMedlemmerILag(hypersysLokallagId = id, aar = LocalDate.now().year, token = "Bearer ${hentBearerToken().access_token}")
 
-    override fun hentVerv(id: Int) = hypersysKlient.hentVerv("Bearer ${hentBearerToken().access_token}", orgId = id.toString())
+    private fun hentVerv(id: Int) = hypersysKlient.hentVerv("Bearer ${hentBearerToken().access_token}", orgId = id.toString())
 
     override fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership> =
         hentAlleLagIHierarki(topplag).keys.filterNot { it.id == topplag }.flatMap { lag ->
@@ -117,6 +115,5 @@ class FakeHypersysService : HypersysService {
     override fun hentFraHypersys(lag: String): Map<String, List<String?>> = mapOf("Testlag2" to listOf("raudtosloteknisk@gmail.com"))
     override fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>> = emptyMap()
     override fun hentMedlemmer(id: Int): List<Membership> = emptyList()
-    override fun hentVerv(id: Int): List<Verv> = emptyList()
     override fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership> = emptyList()
  }
