@@ -50,5 +50,6 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
         javaParameters = true
+        freeCompilerArgs = listOf("-Xjvm-default=all")
     }
 }
