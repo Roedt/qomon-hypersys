@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.3.21"
-    kotlin("plugin.allopen") version "2.3.21"
+    kotlin("jvm") version "2.4.10"
+    kotlin("plugin.allopen") version "2.4.10"
     id("io.quarkus")
 }
 
@@ -50,11 +50,5 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
         javaParameters = true
-        /*
-        Denne er for å unngå unødige advarsler om https://youtrack.jetbrains.com/issue/KT-73255
-        Vi bruker egentlig bare konstruktør-varianten, men vil egentlig helst holde oss til kotlin sin standardvariant
-        Så når dette er blitt standarden i kotlin - som det skal bli - så kan vi skru av denne
-         */
-        freeCompilerArgs = listOf("-Xannotation-default-target=param-property", "-Xjvm-default=all")
     }
 }
