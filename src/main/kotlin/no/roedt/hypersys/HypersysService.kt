@@ -19,6 +19,7 @@ interface HypersysService {
     fun hentBruker(id: Int): Any
     fun hentMedlemmer(id: Int): List<Membership>
     fun hentVerv(id: Int): List<Verv>
+    fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership>
 }
 
 @Dependent
@@ -79,6 +80,14 @@ class EkteHypersysService(
 
     override fun hentVerv(id: Int) = hypersysKlient.hentVerv("Bearer ${hentBearerToken().access_token}", orgId = id.toString())
 
+    override fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership> =
+        hentAlleLagIHierarki(topplag).keys.filterNot { it.id == topplag }.flatMap { lag ->
+            println("Finn folk med verv i lag ${lag.name} (${lag.id})")
+            val verv = hentVerv(lag.id).filter { verv -> verv.role_type in interessanteVerv.map { it.id } }
+            hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }
+                .also { println("Fann ${it.size} medlemmar med relevante verv i ${lag.name} (${lag.id}") }
+        }.distinct()
+
     private fun finnEposter(
         bearerToken: String,
         organisasjonsledd: Organisasjonsledd,
@@ -116,4 +125,5 @@ class FakeHypersysService : HypersysService {
     override fun hentBruker(id: Int): Any = id // TODO ved typing
     override fun hentMedlemmer(id: Int): List<Membership> = emptyList()
     override fun hentVerv(id: Int): List<Verv> = emptyList()
+    override fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership> = emptyList()
  }

@@ -25,11 +25,7 @@ class VervService(
             Hypersysverv.Lyttekaptein,
             Hypersysverv.Oekonomiansvarleg
         )
-        val personerAaGiVerv = hypersysService.hentAlleLagIHierarki(topplag).keys.filterNot { it.id == topplag }.flatMap { lag ->
-            println("Finn folk med verv i lag ${lag.name} (${lag.id})")
-            val verv = hypersysService.hentVerv(lag.id).filter { verv -> verv.role_type in interessanteVerv.map { it.id } }
-            hypersysService.hentMedlemmer(lag.id).filter { medlem -> medlem.name in verv.map { it.name } }.also { println("Fann ${it.size} medlemmar med relevante verv i ${lag.name} (${lag.id}") }
-        }.distinct()
+        val personerAaGiVerv = hypersysService.finnPersonerMedVerv(topplag, interessanteVerv)
 
         val nyRolle = qomonService.roller().data.organisator()
 
