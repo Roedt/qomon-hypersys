@@ -1,0 +1,20 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 15
+- package-ecosystem: docker
+  directory: "src/main/docker"
+  schedule:
+    interval: daily
+    time: "04:30"
+  open-pull-requests-limit: 5
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:30"
+  open-pull-requests-limit: 5
