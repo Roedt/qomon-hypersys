@@ -27,8 +27,8 @@ class LagResource(
             return
         }
         logger.info("Startar synkronisering av lag")
-//        val nyeFolkILag = lagService.finnLagOgFolkAaOppdatere()
-//        qomonService.oppdaterTeams(nyeFolkILag)
-//        logger.info("Ferdig med synkronisering, oppdaterte folk i ${nyeFolkILag.size} lag")
+        val nyeFolkILag = lagService.finnLagOgFolkAaOppdatere()
+        qomonService.oppdaterTeams(nyeFolkILag)
+        logger.info("Ferdig med synkronisering, oppdaterte folk i ${nyeFolkILag.size} lag")
     }
 }
