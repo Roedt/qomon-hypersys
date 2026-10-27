@@ -63,7 +63,9 @@ class LagService(
         100725 to 10419, // Buskerud
         100435 to 10420, // Ve&Te
         100726 to 10421, // Akershus
-        100727 to 10422 // Østfold
+        100727 to 10422, // Østfold
+        100631 to 10971, // Elverum
+        100591 to 10970, // Årdal
     )
 
     fun finnQomonTeam(lagIHypersys: HypersysLagId): QomonTeamId = QomonTeamId((overstyringer[lagIHypersys.id] ?: lagIHypersys.id))
