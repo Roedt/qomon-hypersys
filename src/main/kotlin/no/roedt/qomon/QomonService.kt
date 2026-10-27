@@ -56,7 +56,8 @@ class QomonService(
         val manuelleUnntak = setOf(
             "Rødt Norge", "Sentralt ansatte", "Admingruppa", "S33", "Testlag2 for e-postsjekk",
             "FN - Gruppe 1", "FN - Gruppe 2", "FN - Gruppe 3", "FN - Gruppe 4", "FN - Gruppe 5", "FN - Gruppe 6", "FN - Gruppe 7", "FN - Gruppe 8", "FN - Gruppe 9",
-            "Organisatorer"
+            "Organisatorer", "Test - kurs",
+
         )
         return klient.teams(authorization()).data.teams.filterNot { it.name in manuelleUnntak }
             .map { team -> overstyrteNavn[QomonTeamNavn(team.name)]?.let { overstyrt -> team.copy(name = overstyrt.navn) } ?: team }
@@ -120,6 +121,8 @@ private val overstyrteNavn: Map<QomonTeamNavn, HypersysLagNavn> = mapOf(
     QomonTeamNavn("Kinn - kommuneorganisasjon") to HypersysLagNavn("Kinn - kommuneorganisasjon i Rødt"),
     QomonTeamNavn("Raudt Aure") to HypersysLagNavn("Rødt Aure"),
     QomonTeamNavn("Tana") to HypersysLagNavn("Rødt Tana og Nesseby"),
+    QomonTeamNavn("Alstahaug Rødt") to HypersysLagNavn("Rødt Alstahaug"),
+    QomonTeamNavn("Rødt Tjeldsund") to HypersysLagNavn("Rødt Tjeldsund / Dielddanuori")
 )
 
 @JvmInline
