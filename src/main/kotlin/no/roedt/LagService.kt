@@ -22,7 +22,7 @@ class LagService(
         val alleLag = hypersysService.hentAlleLagIHierarki(topplag)
         qomonService.opprettLag(alleLag.keys)
 
-        val folkIQomon = qomonService.hentFolk().data.users.filterNot { it.role_data.order in setOf(0, 1, 2, 3)} // Folk som allereie har rolle som administrator eller organisator treng ikkje å få det på nytt
+        val folkIQomon = qomonService.hentFolk().data.users
 
         val medlemmerIHypersys = folkIQomon
             .mapNotNull{ it.mail?.trim() }
