@@ -24,14 +24,16 @@ class LagService(
 
         val folkIQomon = qomonService.hentFolk().data.users.filterNot { it.role_data.order in setOf(0, 1, 2, 3)} // Folk som allereie har rolle som administrator eller organisator treng ikkje å få det på nytt
 
-        val medlemmerIHypersys = folkIQomon.mapNotNull{ it.mail?.trim() }.associateWith { hypersysService.finnMedlem(it).firstOrNull()?.id }.filterValues { it != null }
-
-        val mapped = medlemmerIHypersys.mapValues { hypersysService.hentBruker(it.value!!) }
+        val medlemmerIHypersys = folkIQomon
+            .mapNotNull{ it.mail?.trim() }
+            .associateWith { hypersysService.finnMedlem(it).singleOrNull()?.id }
+            .filterValues { it != null }
+            .mapValues { hypersysService.hentBruker(it.value!!) }
 
         val nyeFolkILag = mutableMapOf<QomonTeamId, MutableList<Pair<HypersysMedlemId, QomonBrukerId>>>()
 
-        mapped.forEach { person ->
-            val alleLagAaLeggeTilI = alleLag.entries.first { it.key.id == person.value.memberships.first().organisation }
+        medlemmerIHypersys.forEach { person ->
+            val alleLagAaLeggeTilI = alleLag.entries.single { it.key.id == person.value.memberships.first().organisation }
             val medlemId = HypersysMedlemId(person.value.id)
             val qomonBrukerId = folkIQomon.finnQomonId(person.key)
 
