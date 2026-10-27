@@ -34,7 +34,10 @@ class VervService(
         val folkFraQomonIHypersys = personerAaGiVerv.filter { folkIQomon.map { it.mail }.contains(it.email) }
 
         val endringer = folkFraQomonIHypersys.map { person ->
-            val qomonBrukerId = folkIQomon.finnQomonId(person)
+            if (person.email == null) {
+                throw IllegalStateException("Skal ikkje kunne ha person i Qomon utan epost, men det har ikkje ${person.member_id} i organisasjon ${person.organisation_id}")
+            }
+            val qomonBrukerId = folkIQomon.finnQomonId(person.email)
             qomonService.giRolle(nyRolle, qomonBrukerId)
         }
         return endringer
