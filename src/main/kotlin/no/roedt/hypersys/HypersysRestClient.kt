@@ -9,9 +9,11 @@ import jakarta.ws.rs.POST
 import jakarta.ws.rs.Path
 import jakarta.ws.rs.PathParam
 import jakarta.ws.rs.Produces
+import jakarta.ws.rs.QueryParam
 import jakarta.ws.rs.core.MediaType
+import no.roedt.hypersys.externalModel.Bruker
+import no.roedt.hypersys.externalModel.FinnMedlem
 import no.roedt.hypersys.externalModel.IsMember
-import no.roedt.hypersys.externalModel.Member
 import no.roedt.hypersys.externalModel.Organ
 import no.roedt.hypersys.externalModel.Organisasjonsledd
 import no.roedt.hypersys.externalModel.Profile
@@ -50,6 +52,13 @@ interface HypersysRestClient {
         @PathParam("aar") aar: Int = LocalDate.now().year,
         @HeaderParam("Authorization") token: String // Bearer
     ) : List<Membership>
+
+    @GET
+    @Path("/old/auth/api/user/")
+    fun finnMedlem(
+        @QueryParam("email") epost: String,
+        @HeaderParam("Authorization") token: String // Bearer
+    ) : List<FinnMedlem>
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -101,7 +110,7 @@ interface HypersysRestClient {
     fun hentBruker(
         @HeaderParam("Authorization") token: String, // Bearer
         @PathParam("userId") userId: String
-    ) : HentBruker
+    ) : Bruker
 
     @GET
     @Path("old/org/api/roles-current/{orgId}/")
@@ -110,7 +119,3 @@ interface HypersysRestClient {
         @PathParam("orgId") orgId: String
     ) : List<Verv>
 }
-
-data class HentBruker(
-    val email: String
-)

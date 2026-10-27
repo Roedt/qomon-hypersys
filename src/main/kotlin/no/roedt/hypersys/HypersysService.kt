@@ -3,6 +3,8 @@ package no.roedt.hypersys
 import io.quarkus.arc.properties.IfBuildProperty
 import jakarta.enterprise.context.Dependent
 import no.roedt.SecretFactory
+import no.roedt.hypersys.externalModel.Bruker
+import no.roedt.hypersys.externalModel.FinnMedlem
 import no.roedt.hypersys.externalModel.Organisasjonsledd
 import no.roedt.hypersys.externalModel.membership.Membership
 import org.eclipse.microprofile.rest.client.inject.RestClient
@@ -16,6 +18,8 @@ interface HypersysService {
     fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>>
     fun hentMedlemmer(id: Int): List<Membership>
     fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership>
+    fun finnMedlem(mail: String): List<FinnMedlem>
+    fun hentBruker(value: Int): Bruker
 }
 
 @Dependent
@@ -71,6 +75,10 @@ class EkteHypersysService(
 
     override fun hentMedlemmer(id: Int) = hypersysKlient.hentMedlemmerILag(hypersysLokallagId = id, aar = LocalDate.now().year, token = "Bearer ${hentBearerToken().access_token}")
 
+    override fun finnMedlem(mail: String): List<FinnMedlem> = hypersysKlient.finnMedlem(epost = mail, token = "Bearer ${hentBearerToken().access_token}")
+
+    override fun hentBruker(value: Int): Bruker = hypersysKlient.hentBruker(token = "Bearer ${hentBearerToken().access_token}", userId = value.toString())
+
     private fun hentVerv(id: Int) = hypersysKlient.hentVerv("Bearer ${hentBearerToken().access_token}", orgId = id.toString())
 
     override fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership> =
@@ -116,4 +124,6 @@ class FakeHypersysService : HypersysService {
     override fun hentAlleLagIHierarki(topplag: Int): Map<Organisasjonsledd, List<Organisasjonsledd>> = emptyMap()
     override fun hentMedlemmer(id: Int): List<Membership> = emptyList()
     override fun finnPersonerMedVerv(topplag: Int, interessanteVerv: Set<Hypersysverv>): List<Membership> = emptyList()
+    override fun finnMedlem(mail: String): List<FinnMedlem> = emptyList()
+    override fun hentBruker(value: Int): Bruker = TODO("Not yet implemented")
  }

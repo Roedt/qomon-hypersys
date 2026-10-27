@@ -4,7 +4,6 @@ import jakarta.enterprise.context.Dependent
 import no.roedt.hypersys.HypersysService
 import no.roedt.hypersys.externalModel.HypersysLagId
 import no.roedt.hypersys.externalModel.HypersysMedlemId
-import no.roedt.hypersys.externalModel.membership.Membership
 import no.roedt.qomon.QomonBrukerId
 import no.roedt.qomon.QomonService
 import no.roedt.qomon.QomonTeamId
@@ -23,17 +22,18 @@ class LagService(
         val alleLag = hypersysService.hentAlleLagIHierarki(topplag)
         qomonService.opprettLag(alleLag.keys)
 
-        val folkIQomon = qomonService.hentFolk().data.users
+        val folkIQomon = qomonService.hentFolk().data.users.filterNot { it.role_data.order in setOf(0, 1, 2, 3)} // Folk som allereie har rolle som administrator eller organisator treng ikkje å få det på nytt
 
-        val folkFraQomonIHypersys: List<Membership> =
-            hypersysService.hentMedlemmer(topplag).filter { folkIQomon.map { it.mail }.contains(it.email) }
+        val medlemmerIHypersys = folkIQomon.mapNotNull{ it.mail?.trim() }.associateWith { hypersysService.finnMedlem(it).firstOrNull()?.id }.filterValues { it != null }
+
+        val mapped = medlemmerIHypersys.mapValues { hypersysService.hentBruker(it.value!!) }
 
         val nyeFolkILag = mutableMapOf<QomonTeamId, MutableList<Pair<HypersysMedlemId, QomonBrukerId>>>()
 
-        folkFraQomonIHypersys.forEach { person ->
-            val alleLagAaLeggeTilI = alleLag.entries.first { it.key.id == person.organisation_id }
-            val medlemId = HypersysMedlemId(person.member_id)
-            val qomonBrukerId = folkIQomon.finnQomonId(person)
+        mapped.forEach { person ->
+            val alleLagAaLeggeTilI = alleLag.entries.first { it.key.id == person.value.memberships.first().organisation }
+            val medlemId = HypersysMedlemId(person.value.id)
+            val qomonBrukerId = folkIQomon.finnQomonId(person.key)
 
             nyeFolkILag.putAndAdd(finnQomonTeam(HypersysLagId(alleLagAaLeggeTilI.key.id)), medlemId, qomonBrukerId)
             alleLagAaLeggeTilI.value.forEach {
