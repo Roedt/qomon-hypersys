@@ -29,7 +29,7 @@ class VervService(
 
         val nyRolle = qomonService.roller().data.organisator()
 
-        val folkIQomon = qomonService.hentFolk().data.users
+        val folkIQomon = qomonService.hentFolk().data.users.filterNot { it.role_data.erAdmimistrator || it.role_data.erOrganisator }
 
         val folkFraQomonIHypersys = personerAaGiVerv.filter { folkIQomon.map { it.mail }.contains(it.email) }
 
@@ -38,7 +38,6 @@ class VervService(
                 throw IllegalStateException("Skal ikkje kunne ha person i Qomon utan epost, men det har ikkje ${person.member_id} i organisasjon ${person.organisation_id}")
             }
             val qomonBrukerId = folkIQomon.finnQomonId(person.email)
-            // TODO: utvid responsen frå hentFolk()-kallet i qomonService til å returnere roledata, ref apiet, og filtrer tidlegare basert på det  https://developers.qomon.com/api-reference/users/get-a-user
             qomonService.giRolle(nyRolle, qomonBrukerId)
         }
         return endringer

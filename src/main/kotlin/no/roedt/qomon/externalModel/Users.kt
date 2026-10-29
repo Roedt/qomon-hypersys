@@ -19,4 +19,9 @@ data class RoleData(
     val id: Int,
     val name: String?,
     val order: Int,
-)
+) {
+    val erOrganisator: Boolean
+        get() = order == 3
+    val erAdmimistrator: Boolean
+        get() = order == 2
+}
